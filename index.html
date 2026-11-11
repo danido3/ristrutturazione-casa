@@ -6,13 +6,15 @@
 </fieldset></form>
 <div id="cloud-account" hidden>
 <button type="button" id="cloud-logout">Esci</button>
+<button type="button" id="cloud-sync" hidden>Usa archivio condiviso</button>
 <label for="cloud-file">Backup JSON da File</label>
 <input id="cloud-file" type="file" accept=".json,application/json">
 <button type="button" id="cloud-import">Importa backup</button>
 </div>
-<p class="muted" id="cloud-status" role="status"></p></section></main><script>const key='ristrutturazione-casa-v1';let data;try{data=JSON.parse(localStorage.getItem(key))}catch{}if(!data||!Array.isArray(data.entries))data={initial:25100,expected:12000,entries:[{id:'estimate',description:'Pagamenti lavori da verificare (stima)',amount:6500,date:'',status:'planned'}]};let editId=null;const el=id=>document.getElementById(id),eur=n=>new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'}).format(n);function persist(){localStorage.setItem(key,JSON.stringify(data));render()}
+<p class="muted" id="cloud-status" role="status"></p></section></main><script>const key='ristrutturazione-casa-v1';let data;try{data=JSON.parse(localStorage.getItem(key))}catch{}if(!data||!Array.isArray(data.entries))data={initial:25100,expected:12000,entries:[{id:'estimate',description:'Pagamenti lavori da verificare (stima)',amount:6500,date:'',status:'planned'}]};let editId=null;const el=id=>document.getElementById(id),eur=n=>new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'}).format(n);let saveShared = null;
+function persist(){if(saveShared){void saveShared();return}localStorage.setItem(key,JSON.stringify(data));render()}
 function exportBackup() {
-  const backup = localStorage.getItem(key) ?? JSON.stringify(data);
+  const backup = saveShared ? JSON.stringify(data) : localStorage.getItem(key) ?? JSON.stringify(data);
   const url = URL.createObjectURL(new Blob([backup], {type: 'application/json'}));
   const link = document.createElement('a');
   link.href = url;
@@ -29,6 +31,14 @@ const account = document.getElementById('cloud-account');
 const fileInput = document.getElementById('cloud-file');
 const importButton = document.getElementById('cloud-import');
 const logout = document.getElementById('cloud-logout');
+const sync = document.getElementById('cloud-sync');
+const localSections = [el('home'), el('spese')];
+function fingerprint(value) {
+  return JSON.stringify(value, (_, item) =>
+    item && typeof item === 'object' && !Array.isArray(item)
+      ? Object.fromEntries(Object.keys(item).sort().map(key => [key, item[key]]))
+      : item);
+}
 const sdk = 'https://www.gstatic.com/firebasejs/11.10.0/';
 function validBackup(backup) {
   return backup && Number.isFinite(backup.initial) && backup.initial >= 0 &&
@@ -67,7 +77,80 @@ login.addEventListener('submit', async event => {
     account.hidden = false;
     importButton.disabled = true;
     status.textContent = 'Controllo archivio online…';
+    let unsubscribe;
+    let localData;
+    let baseline;
+    let busy = false;
+    sync.hidden = true;
+    function showShared(backup) {
+      baseline = structuredClone(backup);
+      data = structuredClone(backup);
+      render();
+      status.textContent = 'Archivio condiviso attivo. ' + summary(backup);
+    }
+    sync.onclick = async () => {
+      sync.disabled = true;
+      logout.disabled = true;
+      try {
+        const snapshot = await dbSdk.getDocFromServer(ref);
+        if (!validBackup(snapshot.data())) throw Error('Archivio non valido');
+        localData = data;
+        hideForm();
+        showShared(snapshot.data());
+        saveShared = async () => {
+          const candidate = structuredClone(data);
+          busy = true;
+          logout.disabled = true;
+          localSections.forEach(section => section.inert = true);
+          try {
+            await dbSdk.runTransaction(db, async transaction => {
+              const current = await transaction.get(ref);
+              if (fingerprint(current.data()) !== fingerprint(baseline)) throw Error('conflitto');
+              transaction.update(ref, candidate);
+            });
+            showShared(candidate);
+          } catch (error) {
+            showShared(baseline);
+            try {
+              const latest = await dbSdk.getDocFromServer(ref);
+              if (validBackup(latest.data())) showShared(latest.data());
+            } catch {}
+            alert(error.message === 'conflitto'
+              ? 'L’archivio è cambiato sull’altro dispositivo. Controlla i dati aggiornati e ripeti la modifica.'
+              : 'Salvataggio non confermato. Controlla l’archivio e la connessione prima di riprovare.');
+          } finally {
+            localSections.forEach(section => section.inert = false);
+            logout.disabled = false;
+            busy = false;
+          }
+        };
+        sync.hidden = true;
+        fileInput.disabled = true;
+        importButton.disabled = true;
+        unsubscribe = dbSdk.onSnapshot(ref, {includeMetadataChanges: true}, snapshot => {
+          if (busy || snapshot.metadata.hasPendingWrites || snapshot.metadata.fromCache ||
+            !validBackup(snapshot.data())) return;
+          if (!el('form').hidden || Number(el('initial').value) !== baseline.initial ||
+            Number(el('expected').value) !== baseline.expected) return;
+          showShared(snapshot.data());
+        }, () => { status.textContent = 'Aggiornamenti online non disponibili. Controlla la connessione.'; });
+      } catch {
+        status.textContent = 'Impossibile aprire l’archivio condiviso.';
+      } finally {
+        sync.disabled = false;
+        logout.disabled = false;
+      }
+    };
     logout.onclick = async () => {
+      unsubscribe?.();
+      if (saveShared) {
+        saveShared = null;
+        data = localData;
+        hideForm();
+        render();
+      }
+      sync.hidden = true;
+      fileInput.disabled = false;
       await authSdk.signOut(auth);
       fileInput.value = '';
       login.hidden = false;
@@ -96,6 +179,7 @@ login.addEventListener('submit', async event => {
           return true;
         });
         const saved = await dbSdk.getDocFromServer(ref);
+        sync.hidden = !validBackup(saved.data());
         status.textContent = (created ? 'Backup importato e riletto da Firebase. ' :
           'Archivio già presente. ') + summary(saved.data());
       } catch {
@@ -110,6 +194,7 @@ login.addEventListener('submit', async event => {
       status.textContent = snapshot.exists() ?
         'Archivio online presente. ' + summary(snapshot.data()) : 'Archivio online vuoto. Puoi importare il backup.';
       importButton.disabled = snapshot.exists();
+      sync.hidden = !validBackup(snapshot.data());
     } catch {
       status.textContent = 'Archivio online non accessibile. Verifica la connessione e le regole di Firestore.';
     }
