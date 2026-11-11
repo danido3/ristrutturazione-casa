@@ -1,4 +1,4 @@
-<!doctype html><html lang="it"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ristrutturazione Casa</title><link rel="icon" type="image/png" href="icon.png"><link rel="apple-touch-icon" href="icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Ristrutturazione Casa"><meta name="theme-color" content="#087669"><style>body{margin:0;background:#f5f3ee;color:#25332d;font:16px system-ui}main{max-width:480px;margin:auto;padding:20px}h1{font-size:23px}h2{font-size:19px}.card{background:white;padding:20px;border-radius:18px;margin:16px 0}.tabs{display:flex;gap:8px}.tabs button{flex:1}.active,.primary{background:#23775d;color:white}button{border:0;border-radius:10px;padding:12px;cursor:pointer}button.primary{width:100%;margin:10px 0}input,select{display:block;box-sizing:border-box;width:100%;padding:12px;margin:7px 0 15px;border:1px solid #ccc;border-radius:9px;font:inherit}label,.muted{font-size:14px;color:#666}.big{font-size:36px;font-weight:750;color:#23775d}.line{display:flex;justify-content:space-between;gap:10px;margin:15px 0}.entry{border-bottom:1px solid #eee;padding:12px 0}.actions{display:flex;gap:5px;flex-wrap:wrap}.actions button{font-size:12px}[hidden]{display:none!important}</style><main><h1>⌂ Ristrutturazione Casa</h1><nav class="tabs"><button id="th" class="active" onclick="tab('home')">Riepilogo</button><button id="ts" onclick="tab('spese')">Spese</button></nav><section id="home"><div class="card"><div class="muted">Disponibile adesso</div><div class="big" id="balance"></div><div class="muted">Saldo iniziale meno pagamenti registrati</div></div><div class="card"><div class="line"><span>Entrate in arrivo</span><b id="incoming"></b></div><div class="line"><span>Da pagare</span><b id="pending"></b></div><hr><div class="muted">Saldo futuro stimato</div><h2 id="future"></h2><div class="muted">Le entrate future non sono ancora incassate</div></div><button class="primary" onclick="tab('spese');showForm()">+ Aggiungi una spesa</button><div class="card"><h2>Importi iniziali</h2><label>Liquidità iniziale (€)<input id="initial" type="number" min="0" step=".01"></label><label>Entrate previste (€)<input id="expected" type="number" min="0" step=".01"></label><button class="primary" onclick="saveSettings()">Aggiorna importi</button></div></section><section id="spese" hidden><div class="card"><h2>Le nostre spese</h2><button class="primary" onclick="showForm()">+ Nuova spesa</button><div id="form" hidden><h2 id="formTitle">Nuova spesa</h2><label>Descrizione<input id="description" placeholder="Es. Acconto idraulico"></label><label>Importo (€)<input id="amount" type="number" min=".01" step=".01"></label><label>Data<input id="date" type="date"></label><label>Stato<select id="status"><option value="paid">Già pagato</option><option value="planned">Da pagare</option></select></label><button class="primary" onclick="saveEntry()">Salva</button><button onclick="hideForm()">Annulla</button></div><div id="list"></div></div></section><p class="muted">Versione di prova: dati salvati solo su questo dispositivo, non sincronizzati.</p><button type="button" onclick="exportBackup()">Esporta backup</button><section class="card"><h2>Archivio condiviso</h2>
+<!doctype html><html lang="it"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ristrutturazione Casa</title><link rel="icon" type="image/png" href="icon.png"><link rel="apple-touch-icon" href="icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Ristrutturazione Casa"><meta name="theme-color" content="#087669"><style>body{margin:0;background:#f5f3ee;color:#25332d;font:16px system-ui}main{max-width:480px;margin:auto;padding:20px}h1{font-size:23px}h2{font-size:19px}.card{background:white;padding:20px;border-radius:18px;margin:16px 0}.tabs{display:flex;gap:8px}.tabs button{flex:1}.active,.primary{background:#23775d;color:white}button{border:0;border-radius:10px;padding:12px;cursor:pointer}button.primary{width:100%;margin:10px 0}input,select{display:block;box-sizing:border-box;width:100%;padding:12px;margin:7px 0 15px;border:1px solid #ccc;border-radius:9px;font:inherit}label,.muted{font-size:14px;color:#666}.big{font-size:36px;font-weight:750;color:#23775d}.line{display:flex;justify-content:space-between;gap:10px;margin:15px 0}.entry{border-bottom:1px solid #eee;padding:12px 0}.actions{display:flex;gap:5px;flex-wrap:wrap}.actions button{font-size:12px}[hidden]{display:none!important}</style><main><h1>⌂ Ristrutturazione Casa</h1><p id="active-archive" role="status"><strong>Archivio in uso</strong> · Spese su questo iPhone</p><nav class="tabs"><button id="th" class="active" onclick="tab('home')">Riepilogo</button><button id="ts" onclick="tab('spese')">Spese</button></nav><section id="home"><div class="card"><div class="muted">Disponibile adesso</div><div class="big" id="balance"></div><div class="muted">Saldo iniziale meno pagamenti registrati</div></div><div class="card"><div class="line"><span>Entrate in arrivo</span><b id="incoming"></b></div><div class="line"><span>Da pagare</span><b id="pending"></b></div><hr><div class="muted">Saldo futuro stimato</div><h2 id="future"></h2><div class="muted">Le entrate future non sono ancora incassate</div></div><button class="primary" onclick="tab('spese');showForm()">+ Aggiungi una spesa</button><div class="card"><h2>Importi iniziali</h2><label>Liquidità iniziale (€)<input id="initial" type="number" min="0" step=".01"></label><label>Entrate previste (€)<input id="expected" type="number" min="0" step=".01"></label><button class="primary" onclick="saveSettings()">Aggiorna importi</button></div></section><section id="spese" hidden><div class="card"><h2>Le nostre spese</h2><button class="primary" onclick="showForm()">+ Nuova spesa</button><div id="form" hidden><h2 id="formTitle">Nuova spesa</h2><label>Descrizione<input id="description" placeholder="Es. Acconto idraulico"></label><label>Importo (€)<input id="amount" type="number" min=".01" step=".01"></label><label>Data<input id="date" type="date"></label><label>Stato<select id="status"><option value="paid">Già pagato</option><option value="planned">Da pagare</option></select></label><button class="primary" onclick="saveEntry()">Salva</button><button onclick="hideForm()">Annulla</button></div><div id="list"></div></div></section><p class="muted">Versione di prova: dati salvati solo su questo dispositivo, non sincronizzati.</p><button type="button" onclick="exportBackup()">Esporta backup</button><section class="card"><h2>Archivio condiviso</h2>
 <form id="cloud-login"><fieldset disabled id="cloud-credentials">
 <label>Email<input name="email" type="email" autocomplete="username" required></label>
 <label>Password<input name="password" type="password" autocomplete="current-password" required></label>
@@ -52,11 +52,19 @@ function summary(backup) {
   return backup.entries.length + ' spese · Liquidità iniziale ' +
     eur(backup.initial) + ' · Entrate previste ' + eur(backup.expected);
 }
-login.addEventListener('submit', async event => {
-  event.preventDefault();
-  const button = login.querySelector('button');
-  button.disabled = true;
-  try {
+const archiveIndicator = el('active-archive');
+function setArchiveLabel(label) {
+  archiveIndicator.lastChild.textContent = ' · ' + label;
+}
+let cloudConnection;
+function connectCloud() {
+  cloudConnection ??= loadCloud().catch(error => {
+    cloudConnection = undefined;
+    throw error;
+  });
+  return cloudConnection;
+}
+async function loadCloud() {
     const [{initializeApp}, authSdk, dbSdk] = await Promise.all([
       import(sdk + 'firebase-app.js'), import(sdk + 'firebase-auth.js'), import(sdk + 'firebase-firestore.js')
     ]);
@@ -69,10 +77,11 @@ login.addEventListener('submit', async event => {
       appId: "1:775685201914:web:0ae57054c16a92d57f0e43"
     });
     const auth = authSdk.getAuth(app);
-    await authSdk.setPersistence(auth, authSdk.inMemoryPersistence);
-    await authSdk.signInWithEmailAndPassword(auth, login.elements.email.value, login.elements.password.value);
     const db = dbSdk.getFirestore(app);
-    const ref = dbSdk.doc(db, 'archivi', 'ristrutturazione-casa');
+    await auth.authStateReady();
+    return {auth, authSdk, db, dbSdk, ref: dbSdk.doc(db, 'archivi', 'ristrutturazione-casa')};
+}
+async function openAccount({auth, authSdk, db, dbSdk, ref}) {
     login.hidden = true;
     account.hidden = false;
     importButton.disabled = true;
@@ -88,15 +97,16 @@ login.addEventListener('submit', async event => {
       render();
       status.textContent = 'Archivio condiviso attivo. ' + summary(backup);
     }
-    sync.onclick = async () => {
+    async function openShared(backup) {
       sync.disabled = true;
       logout.disabled = true;
       try {
-        const snapshot = await dbSdk.getDocFromServer(ref);
-        if (!validBackup(snapshot.data())) throw Error('Archivio non valido');
+        if (!backup) backup = (await dbSdk.getDocFromServer(ref)).data();
+        if (!validBackup(backup)) throw Error('Archivio non disponibile');
         localData = data;
         hideForm();
-        showShared(snapshot.data());
+        showShared(backup);
+        setArchiveLabel('Archivio condiviso');
         saveShared = async () => {
           const candidate = structuredClone(data);
           busy = true;
@@ -135,13 +145,20 @@ login.addEventListener('submit', async event => {
           showShared(snapshot.data());
         }, () => { status.textContent = 'Aggiornamenti online non disponibili. Controlla la connessione.'; });
       } catch {
-        status.textContent = 'Impossibile aprire l’archivio condiviso.';
+        status.textContent = 'Impossibile aprire l’archivio condiviso. Le spese visualizzate sono locali.';
       } finally {
         sync.disabled = false;
         logout.disabled = false;
       }
-    };
+    }
+    sync.onclick = () => openShared();
     logout.onclick = async () => {
+      try {
+        await authSdk.signOut(auth);
+      } catch {
+        status.textContent = 'Uscita non riuscita. Riprova.';
+        return;
+      }
       unsubscribe?.();
       if (saveShared) {
         saveShared = null;
@@ -151,7 +168,7 @@ login.addEventListener('submit', async event => {
       }
       sync.hidden = true;
       fileInput.disabled = false;
-      await authSdk.signOut(auth);
+      setArchiveLabel('Spese su questo iPhone');
       fileInput.value = '';
       login.hidden = false;
       account.hidden = true;
@@ -194,10 +211,24 @@ login.addEventListener('submit', async event => {
       status.textContent = snapshot.exists() ?
         'Archivio online presente. ' + summary(snapshot.data()) : 'Archivio online vuoto. Puoi importare il backup.';
       importButton.disabled = snapshot.exists();
-      sync.hidden = !validBackup(snapshot.data());
+      if (validBackup(snapshot.data())) {
+        sync.hidden = false;
+        await openShared(snapshot.data());
+      }
     } catch {
-      status.textContent = 'Archivio online non accessibile. Verifica la connessione e le regole di Firestore.';
+      sync.hidden = false;
+      status.textContent = 'Archivio online non accessibile. Le spese visualizzate sono locali.';
     }
+}
+login.addEventListener('submit', async event => {
+  event.preventDefault();
+  const button = login.querySelector('button');
+  button.disabled = true;
+  try {
+    const cloud = await connectCloud();
+    await cloud.authSdk.signInWithEmailAndPassword(
+      cloud.auth, login.elements.email.value, login.elements.password.value);
+    await openAccount(cloud);
   } catch {
     status.textContent = 'Accesso non riuscito. Controlla email, password e connessione.';
   } finally {
@@ -205,5 +236,16 @@ login.addEventListener('submit', async event => {
     button.disabled = false;
   }
 });
-document.getElementById('cloud-credentials').disabled = false;
+const credentials = el('cloud-credentials');
+async function restoreAccount() {
+  try {
+    const cloud = await connectCloud();
+    if (cloud.auth.currentUser) await openAccount(cloud);
+  } catch {
+    status.textContent = 'Archivio online non disponibile. Puoi riprovare ad accedere.';
+  } finally {
+    credentials.disabled = false;
+  }
+}
+void restoreAccount();
 </script></html>
