@@ -1,4 +1,16 @@
-<!doctype html><html lang="it"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ristrutturazione Casa</title><link rel="icon" type="image/png" href="icon.png"><link rel="apple-touch-icon" href="icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Ristrutturazione Casa"><meta name="theme-color" content="#087669"><style>body{margin:0;background:#f5f3ee;color:#25332d;font:16px system-ui}main{max-width:480px;margin:auto;padding:20px}h1{font-size:23px}h2{font-size:19px}.card{background:white;padding:20px;border-radius:18px;margin:16px 0}.tabs{display:flex;gap:8px}.tabs button{flex:1}.active,.primary{background:#23775d;color:white}button{border:0;border-radius:10px;padding:12px;cursor:pointer}button.primary{width:100%;margin:10px 0}input,select{display:block;box-sizing:border-box;width:100%;padding:12px;margin:7px 0 15px;border:1px solid #ccc;border-radius:9px;font:inherit}label,.muted{font-size:14px;color:#666}.big{font-size:36px;font-weight:750;color:#23775d}.line{display:flex;justify-content:space-between;gap:10px;margin:15px 0}.entry{border-bottom:1px solid #eee;padding:12px 0}.actions{display:flex;gap:5px;flex-wrap:wrap}.actions button{font-size:12px}[hidden]{display:none!important}</style><main><h1>⌂ Ristrutturazione Casa</h1><nav class="tabs"><button id="th" class="active" onclick="tab('home')">Riepilogo</button><button id="ts" onclick="tab('spese')">Spese</button></nav><section id="home"><div class="card"><div class="muted">Disponibile adesso</div><div class="big" id="balance"></div><div class="muted">Saldo iniziale meno pagamenti registrati</div></div><div class="card"><div class="line"><span>Entrate in arrivo</span><b id="incoming"></b></div><div class="line"><span>Da pagare</span><b id="pending"></b></div><hr><div class="muted">Saldo futuro stimato</div><h2 id="future"></h2><div class="muted">Le entrate future non sono ancora incassate</div></div><button class="primary" onclick="tab('spese');showForm()">+ Aggiungi una spesa</button><div class="card"><h2>Importi iniziali</h2><label>Liquidità iniziale (€)<input id="initial" type="number" min="0" step=".01"></label><label>Entrate previste (€)<input id="expected" type="number" min="0" step=".01"></label><button class="primary" onclick="saveSettings()">Aggiorna importi</button></div></section><section id="spese" hidden><div class="card"><h2>Le nostre spese</h2><button class="primary" onclick="showForm()">+ Nuova spesa</button><div id="form" hidden><h2 id="formTitle">Nuova spesa</h2><label>Descrizione<input id="description" placeholder="Es. Acconto idraulico"></label><label>Importo (€)<input id="amount" type="number" min=".01" step=".01"></label><label>Data<input id="date" type="date"></label><label>Stato<select id="status"><option value="paid">Già pagato</option><option value="planned">Da pagare</option></select></label><button class="primary" onclick="saveEntry()">Salva</button><button onclick="hideForm()">Annulla</button></div><div id="list"></div></div></section><p class="muted">Versione di prova: dati salvati solo su questo dispositivo, non sincronizzati.</p><button type="button" onclick="exportBackup()">Esporta backup</button></main><script>const key='ristrutturazione-casa-v1';let data;try{data=JSON.parse(localStorage.getItem(key))}catch{}if(!data||!Array.isArray(data.entries))data={initial:25100,expected:12000,entries:[{id:'estimate',description:'Pagamenti lavori da verificare (stima)',amount:6500,date:'',status:'planned'}]};let editId=null;const el=id=>document.getElementById(id),eur=n=>new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'}).format(n);function persist(){localStorage.setItem(key,JSON.stringify(data));render()}
+<!doctype html><html lang="it"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ristrutturazione Casa</title><link rel="icon" type="image/png" href="icon.png"><link rel="apple-touch-icon" href="icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Ristrutturazione Casa"><meta name="theme-color" content="#087669"><style>body{margin:0;background:#f5f3ee;color:#25332d;font:16px system-ui}main{max-width:480px;margin:auto;padding:20px}h1{font-size:23px}h2{font-size:19px}.card{background:white;padding:20px;border-radius:18px;margin:16px 0}.tabs{display:flex;gap:8px}.tabs button{flex:1}.active,.primary{background:#23775d;color:white}button{border:0;border-radius:10px;padding:12px;cursor:pointer}button.primary{width:100%;margin:10px 0}input,select{display:block;box-sizing:border-box;width:100%;padding:12px;margin:7px 0 15px;border:1px solid #ccc;border-radius:9px;font:inherit}label,.muted{font-size:14px;color:#666}.big{font-size:36px;font-weight:750;color:#23775d}.line{display:flex;justify-content:space-between;gap:10px;margin:15px 0}.entry{border-bottom:1px solid #eee;padding:12px 0}.actions{display:flex;gap:5px;flex-wrap:wrap}.actions button{font-size:12px}[hidden]{display:none!important}</style><main><h1>⌂ Ristrutturazione Casa</h1><nav class="tabs"><button id="th" class="active" onclick="tab('home')">Riepilogo</button><button id="ts" onclick="tab('spese')">Spese</button></nav><section id="home"><div class="card"><div class="muted">Disponibile adesso</div><div class="big" id="balance"></div><div class="muted">Saldo iniziale meno pagamenti registrati</div></div><div class="card"><div class="line"><span>Entrate in arrivo</span><b id="incoming"></b></div><div class="line"><span>Da pagare</span><b id="pending"></b></div><hr><div class="muted">Saldo futuro stimato</div><h2 id="future"></h2><div class="muted">Le entrate future non sono ancora incassate</div></div><button class="primary" onclick="tab('spese');showForm()">+ Aggiungi una spesa</button><div class="card"><h2>Importi iniziali</h2><label>Liquidità iniziale (€)<input id="initial" type="number" min="0" step=".01"></label><label>Entrate previste (€)<input id="expected" type="number" min="0" step=".01"></label><button class="primary" onclick="saveSettings()">Aggiorna importi</button></div></section><section id="spese" hidden><div class="card"><h2>Le nostre spese</h2><button class="primary" onclick="showForm()">+ Nuova spesa</button><div id="form" hidden><h2 id="formTitle">Nuova spesa</h2><label>Descrizione<input id="description" placeholder="Es. Acconto idraulico"></label><label>Importo (€)<input id="amount" type="number" min=".01" step=".01"></label><label>Data<input id="date" type="date"></label><label>Stato<select id="status"><option value="paid">Già pagato</option><option value="planned">Da pagare</option></select></label><button class="primary" onclick="saveEntry()">Salva</button><button onclick="hideForm()">Annulla</button></div><div id="list"></div></div></section><p class="muted">Versione di prova: dati salvati solo su questo dispositivo, non sincronizzati.</p><button type="button" onclick="exportBackup()">Esporta backup</button><section class="card"><h2>Archivio condiviso</h2>
+<form id="cloud-login">
+<label>Email<input name="email" type="email" autocomplete="username" required></label>
+<label>Password<input name="password" type="password" autocomplete="current-password" required></label>
+<button class="primary">Accedi</button>
+</form>
+<div id="cloud-account" hidden>
+<button type="button" id="cloud-logout">Esci</button>
+<label for="cloud-file">Backup JSON da File</label>
+<input id="cloud-file" type="file" accept=".json,application/json">
+<button type="button" id="cloud-import">Importa backup</button>
+</div>
+<p class="muted" id="cloud-status" role="status"></p></section></main><script>const key='ristrutturazione-casa-v1';let data;try{data=JSON.parse(localStorage.getItem(key))}catch{}if(!data||!Array.isArray(data.entries))data={initial:25100,expected:12000,entries:[{id:'estimate',description:'Pagamenti lavori da verificare (stima)',amount:6500,date:'',status:'planned'}]};let editId=null;const el=id=>document.getElementById(id),eur=n=>new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'}).format(n);function persist(){localStorage.setItem(key,JSON.stringify(data));render()}
 function exportBackup() {
   const backup = localStorage.getItem(key) ?? JSON.stringify(data);
   const url = URL.createObjectURL(new Blob([backup], {type: 'application/json'}));
@@ -10,4 +22,102 @@ function exportBackup() {
   link.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
-function tab(t){el('home').hidden=t!=='home';el('spese').hidden=t!=='spese';el('th').classList.toggle('active',t==='home');el('ts').classList.toggle('active',t==='spese')}function render(){let paid=data.entries.filter(e=>e.status==='paid').reduce((a,e)=>a+e.amount,0),pending=data.entries.filter(e=>e.status==='planned').reduce((a,e)=>a+e.amount,0);el('balance').textContent=eur(data.initial-paid);el('incoming').textContent=eur(data.expected);el('pending').textContent=eur(pending);el('future').textContent=eur(data.initial-paid+data.expected-pending);el('initial').value=data.initial;el('expected').value=data.expected;el('list').replaceChildren();data.entries.forEach(e=>{const div=document.createElement('div');div.className='entry';const a=document.createElement('div');a.className='line';const label=document.createElement('span');label.textContent=e.description;const amount=document.createElement('strong');amount.textContent=eur(e.amount);a.append(label,amount);const info=document.createElement('div');info.className='muted';info.textContent=(e.date||'Data da definire')+' · '+(e.status==='paid'?'Pagato':'Da pagare');const actions=document.createElement('div');actions.className='actions';for(const [name,fn] of [['Modifica',()=>showForm(e.id)],['Cambia stato',()=>{e.status=e.status==='paid'?'planned':'paid';persist()}],['Elimina',()=>{if(confirm('Eliminare questa spesa?')){data.entries=data.entries.filter(x=>x.id!==e.id);persist()}}]]){let b=document.createElement('button');b.textContent=name;b.onclick=fn;actions.append(b)}div.append(a,info,actions);el('list').append(div)})}function saveSettings(){let a=Number(el('initial').value),b=Number(el('expected').value);if(!Number.isFinite(a)||a<0||!Number.isFinite(b)||b<0)return alert('Inserisci importi validi');data.initial=a;data.expected=b;persist()}function showForm(id=null){editId=id;let e=data.entries.find(x=>x.id===id);el('form').hidden=false;el('formTitle').textContent=e?'Modifica spesa':'Nuova spesa';el('description').value=e?.description||'';el('amount').value=e?.amount||'';el('date').value=e?.date||new Date().toLocaleDateString('en-CA');el('status').value=e?.status||'paid'}function hideForm(){el('form').hidden=true;editId=null}function saveEntry(){let description=el('description').value.trim(),amount=Number(el('amount').value),date=el('date').value,status=el('status').value;if(!description||!Number.isFinite(amount)||amount<=0||!date)return alert('Compila descrizione, importo e data');if(editId){let e=data.entries.find(x=>x.id===editId);Object.assign(e,{description,amount,date,status})}else data.entries.unshift({id:String(Date.now())+Math.random(),description,amount,date,status});hideForm();persist()}render();</script></html>
+function tab(t){el('home').hidden=t!=='home';el('spese').hidden=t!=='spese';el('th').classList.toggle('active',t==='home');el('ts').classList.toggle('active',t==='spese')}function render(){let paid=data.entries.filter(e=>e.status==='paid').reduce((a,e)=>a+e.amount,0),pending=data.entries.filter(e=>e.status==='planned').reduce((a,e)=>a+e.amount,0);el('balance').textContent=eur(data.initial-paid);el('incoming').textContent=eur(data.expected);el('pending').textContent=eur(pending);el('future').textContent=eur(data.initial-paid+data.expected-pending);el('initial').value=data.initial;el('expected').value=data.expected;el('list').replaceChildren();data.entries.forEach(e=>{const div=document.createElement('div');div.className='entry';const a=document.createElement('div');a.className='line';const label=document.createElement('span');label.textContent=e.description;const amount=document.createElement('strong');amount.textContent=eur(e.amount);a.append(label,amount);const info=document.createElement('div');info.className='muted';info.textContent=(e.date||'Data da definire')+' · '+(e.status==='paid'?'Pagato':'Da pagare');const actions=document.createElement('div');actions.className='actions';for(const [name,fn] of [['Modifica',()=>showForm(e.id)],['Cambia stato',()=>{e.status=e.status==='paid'?'planned':'paid';persist()}],['Elimina',()=>{if(confirm('Eliminare questa spesa?')){data.entries=data.entries.filter(x=>x.id!==e.id);persist()}}]]){let b=document.createElement('button');b.textContent=name;b.onclick=fn;actions.append(b)}div.append(a,info,actions);el('list').append(div)})}function saveSettings(){let a=Number(el('initial').value),b=Number(el('expected').value);if(!Number.isFinite(a)||a<0||!Number.isFinite(b)||b<0)return alert('Inserisci importi validi');data.initial=a;data.expected=b;persist()}function showForm(id=null){editId=id;let e=data.entries.find(x=>x.id===id);el('form').hidden=false;el('formTitle').textContent=e?'Modifica spesa':'Nuova spesa';el('description').value=e?.description||'';el('amount').value=e?.amount||'';el('date').value=e?.date||new Date().toLocaleDateString('en-CA');el('status').value=e?.status||'paid'}function hideForm(){el('form').hidden=true;editId=null}function saveEntry(){let description=el('description').value.trim(),amount=Number(el('amount').value),date=el('date').value,status=el('status').value;if(!description||!Number.isFinite(amount)||amount<=0||!date)return alert('Compila descrizione, importo e data');if(editId){let e=data.entries.find(x=>x.id===editId);Object.assign(e,{description,amount,date,status})}else data.entries.unshift({id:String(Date.now())+Math.random(),description,amount,date,status});hideForm();persist()}render();</script><script type="module">
+const status = document.getElementById('cloud-status');
+const login = document.getElementById('cloud-login');
+const account = document.getElementById('cloud-account');
+const fileInput = document.getElementById('cloud-file');
+const importButton = document.getElementById('cloud-import');
+const logout = document.getElementById('cloud-logout');
+const sdk = 'https://www.gstatic.com/firebasejs/11.10.0/';
+function validBackup(backup) {
+  return backup && Number.isFinite(backup.initial) && backup.initial >= 0 &&
+    Number.isFinite(backup.expected) && backup.expected >= 0 &&
+    Array.isArray(backup.entries) && backup.entries.every(entry =>
+      entry && typeof entry.id === 'string' && typeof entry.description === 'string' &&
+      Number.isFinite(entry.amount) && entry.amount > 0 && typeof entry.date === 'string' &&
+      ['paid', 'planned'].includes(entry.status));
+}
+function summary(backup) {
+  return backup.entries.length + ' spese · Liquidità iniziale ' +
+    eur(backup.initial) + ' · Entrate previste ' + eur(backup.expected);
+}
+login.addEventListener('submit', async event => {
+  event.preventDefault();
+  const button = login.querySelector('button');
+  button.disabled = true;
+  try {
+    const [{initializeApp}, authSdk, dbSdk] = await Promise.all([
+      import(sdk + 'firebase-app.js'), import(sdk + 'firebase-auth.js'), import(sdk + 'firebase-firestore.js')
+    ]);
+    const app = initializeApp({
+      apiKey: "AIzaSyDrDCF-z--Z_-BfOI-q-21NFPpTu5DzZ18",
+      authDomain: "ristrutturazione-casa-a9450.firebaseapp.com",
+      projectId: "ristrutturazione-casa-a9450",
+      storageBucket: "ristrutturazione-casa-a9450.firebasestorage.app",
+      messagingSenderId: "775685201914",
+      appId: "1:775685201914:web:0ae57054c16a92d57f0e43"
+    });
+    const auth = authSdk.getAuth(app);
+    await authSdk.setPersistence(auth, authSdk.inMemoryPersistence);
+    await authSdk.signInWithEmailAndPassword(auth, login.elements.email.value, login.elements.password.value);
+    const db = dbSdk.getFirestore(app);
+    const ref = dbSdk.doc(db, 'archivi', 'ristrutturazione-casa');
+    login.hidden = true;
+    account.hidden = false;
+    importButton.disabled = true;
+    status.textContent = 'Controllo archivio online…';
+    logout.onclick = async () => {
+      await authSdk.signOut(auth);
+      fileInput.value = '';
+      login.hidden = false;
+      account.hidden = true;
+      status.textContent = '';
+    };
+    importButton.onclick = async () => {
+      const file = fileInput.files[0];
+      if (!file) {
+        status.textContent = 'Seleziona il file JSON salvato.';
+        return;
+      }
+      importButton.disabled = true;
+      logout.disabled = true;
+      try {
+        let backup;
+        try { backup = JSON.parse(await file.text()); } catch {}
+        if (!validBackup(backup)) {
+          status.textContent = 'Il file selezionato non è un backup valido.';
+          return;
+        }
+        if (!confirm('Copiare questo backup nell’archivio condiviso? ' + summary(backup))) return;
+        const created = await dbSdk.runTransaction(db, async transaction => {
+          if ((await transaction.get(ref)).exists()) return false;
+          transaction.set(ref, backup);
+          return true;
+        });
+        const saved = await dbSdk.getDocFromServer(ref);
+        status.textContent = (created ? 'Backup importato e riletto da Firebase. ' :
+          'Archivio già presente. ') + summary(saved.data());
+      } catch {
+        status.textContent = 'Importazione non verificata. Esci e accedi di nuovo per controllare l’archivio prima di riprovare.';
+      } finally {
+        importButton.disabled = false;
+        logout.disabled = false;
+      }
+    };
+    try {
+      const snapshot = await dbSdk.getDocFromServer(ref);
+      status.textContent = snapshot.exists() ?
+        'Archivio online presente. ' + summary(snapshot.data()) : 'Archivio online vuoto. Puoi importare il backup.';
+      importButton.disabled = snapshot.exists();
+    } catch {
+      status.textContent = 'Archivio online non accessibile. Verifica la connessione e le regole di Firestore.';
+    }
+  } catch {
+    status.textContent = 'Accesso non riuscito. Controlla email, password e connessione.';
+  } finally {
+    login.elements.password.value = '';
+    button.disabled = false;
+  }
+});
+</script></html>
